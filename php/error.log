@@ -1,0 +1,11 @@
+[27-Feb-2026 13:33:11 Europe/Berlin] 收到訂單數據: {"items":[{"product_id":1,"name":"盲盒鎖匙扣","price":35,"quantity":1,"subtotal":35}],"total":35}
+[27-Feb-2026 13:33:11 Europe/Berlin] 解析後的商品數量: 1
+[27-Feb-2026 13:33:11 Europe/Berlin] 解析後的總金額: 35
+[27-Feb-2026 13:33:11 Europe/Berlin] 資料庫連線成功
+[27-Feb-2026 13:33:11 Europe/Berlin] 開始資料庫交易
+[27-Feb-2026 13:33:11 Europe/Berlin] 產生的訂單編號: ORD20260227944
+[27-Feb-2026 13:33:11 Europe/Berlin] orders 表存在: 是
+[27-Feb-2026 13:33:11 Europe/Berlin] 交易回滾
+[27-Feb-2026 13:33:11 Europe/Berlin] 訂單建立錯誤: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'field list'
+[27-Feb-2026 13:33:11 Europe/Berlin] 錯誤追蹤: #0 C:\xampp\htdocs\ja\php\create_order.php(58): PDOStatement->execute(Array)
+#1 {main}
