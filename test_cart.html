@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>測試購物車</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f8ff; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .product { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        .product:hover { border-color: #1976d2; }
+        .cart { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 10px; 
+            margin-top: 20px; 
+        }
+        .cart-item { 
+            display: flex; 
+            justify-content: space-between; 
+            padding: 10px 0; 
+            border-bottom: 1px solid #eee; 
+        }
+        button { 
+            background: #1976d2; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .total { font-size: 24px; font-weight: bold; color: #1976d2; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛒 測試購物車</h1>
+        
+        <h2>商品列表：</h2>
+        <div id="products"></div>
+        
+        <div class="cart">
+            <h2>購物車 <span id="cartCount">0</span></h2>
+            <div id="cartItems"></div>
+            <div class="total" id="totalAmount">總計: $0</div>
+            <button onclick="checkout()">結帳測試</button>
+        </div>
+    </div>
+
+    <script>
+        // 商品資料
+        const products = [
+            { id: 1, name: '鎖匙扣盲盒', price: 35 },
+            { id: 2, name: '[COMBO] 鎖匙扣盲盒 * 5', price: 150 },
+            { id: 3, name: '月曆', price: 50 }
+        ];
+        
+        let cart = [];
+        
+        // 顯示商品
+        function renderProducts() {
+            const div = document.getElementById('products');
+            div.innerHTML = '';
+            
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product';
+                productDiv.onclick = () => addToCart(product);
+                productDiv.innerHTML = `
+                    <strong>${product.name}</strong> - $${product.price}
+                `;
+                div.appendChild(productDiv);
+            });
+        }
+        
+        // 加入購物車
+        function addToCart(product) {
+            const existing = cart.find(item => item.id === product.id);
+            
+            if (existing) {
+                existing.quantity++;
+                existing.subtotal = existing.quantity * existing.price;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    subtotal: product.price
+                });
+            }
+            
+            renderCart();
+        }
+        
+        // 更新數量
+        function updateQuantity(id, change) {
+            const index = cart.findIndex(item => item.id === id);
+            if (index !== -1) {
+                cart[index].quantity += change;
+                if (cart[index].quantity <= 0) {
+                    cart.splice(index, 1);
+                } else {
+                    cart[index].subtotal = cart[index].quantity * cart[index].price;
+                }
+                renderCart();
+            }
+        }
+        
+        // 顯示購物車
+        function renderCart() {
+            const cartDiv = document.getElementById('cartItems');
+            const cartCount = document.getElementById('cartCount');
+            const totalSpan = document.getElementById('totalAmount');
+            
+            cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            if (cart.length === 0) {
+                cartDiv.innerHTML = '<p>購物車是空的</p>';
+                totalSpan.textContent = '總計: $0';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                total += item.subtotal;
+                html += `
+                    <div class="cart-item">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            $${item.price} x ${item.quantity}
+                        </div>
+                        <div>
+                            $${item.subtotal}
+                            <button onclick="updateQuantity(${item.id}, -1)">-</button>
+                            <button onclick="updateQuantity(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            cartDiv.innerHTML = html;
+            totalSpan.textContent = `總計: $${total}`;
+        }
+        
+        // 結帳測試
+        async function checkout() {
+            if (cart.length === 0) {
+                alert('購物車是空的');
+                return;
+            }
+            
+            const total = cart.reduce((sum, item) => sum + item.subtotal, 0);
+            
+            const orderData = {
+                items: cart.map(item => ({
+                    product_id: item.id,
+                    name: item.name,
+                    price: item.price,
+                    quantity: item.quantity,
+                    subtotal: item.subtotal
+                })),
+                total: total
+            };
+            
+            console.log('送出訂單:', orderData);
+            
+            try {
+                const response = await fetch('php/create_order.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData),
+                    credentials: 'same-origin'
+                });
+                
+                const data = await response.json();
+                console.log('回應:', data);
+                
+                if (data.success) {
+                    alert(`訂單成功！編號：${data.data.order_number}`);
+                    cart = [];
+                    renderCart();
+                } else {
+                    alert(`失敗：${data.message}`);
+                }
+            } catch (error) {
+                alert('錯誤：' + error.message);
+            }
+        }
+        
+        // 初始化
+        renderProducts();
+    </script>
+</body>
+</html>

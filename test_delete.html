@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>簡單刪除</title>
+</head>
+<body>
+    <h1>🗑️ 簡單刪除訂單</h1>
+    
+    <input type="number" id="orderId" placeholder="輸入訂單 ID">
+    <button onclick="simpleDelete()">刪除</button>
+    
+    <div id="result"></div>
+    
+    <script>
+        async function simpleDelete() {
+            const orderId = document.getElementById('orderId').value;
+            if (!orderId) {
+                alert('請輸入訂單 ID');
+                return;
+            }
+            
+            try {
+                const response = await fetch('php/delete_order.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: orderId })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <pre>${JSON.stringify(result, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = '錯誤：' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>

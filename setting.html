@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商品設定 - 藍色收銀</title>
+    <link rel="stylesheet" href="css/pos.css">
+    <style>
+        /* 設定頁面專用樣式 */
+        .discount-badge {
+            background: #ff5252;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+        
+        .price-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .original-price {
+            color: #999;
+            text-decoration: line-through;
+            font-size: 0.9rem;
+        }
+        
+        .discount-price {
+            color: #ff5252;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .discount-input {
+            width: 100px;
+            padding: 8px;
+            border: 2px solid #ffcdd2;
+            border-radius: 6px;
+            color: #d32f2f;
+        }
+        
+        .discount-input:focus {
+            border-color: #ff5252;
+            outline: none;
+        }
+        
+        .price-display {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+        
+        .current-price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1976d2;
+        }
+        
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0;
+        }
+        
+        .toggle-discount {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin-left: 10px;
+        }
+        
+        .toggle-discount.off {
+            background: #9e9e9e;
+        }
+        
+        .help-text {
+            color: #666;
+            font-size: 0.85rem;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部工具列 -->
+    <div class="top-bar">
+        <div class="logo-area">
+            <img src="images/logo.png" alt="Logo" class="nav-logo" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%231976d2\'/%3E%3Ctext x=\'20\' y=\'25\' font-size=\'20\' text-anchor=\'middle\' fill=\'white\'%3E🧾%3C/text%3E%3C/svg%3E';">
+            <div class="logo-text">
+                <span class="brand">藍色收銀</span>
+                <span class="brand-sub">優惠設定</span>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <button class="nav-btn" onclick="window.location.href='pos.html'">
+                <span class="nav-icon">🧾</span> 收銀
+            </button>
+            <button class="nav-btn" onclick="window.location.href='orders.html'">
+                <span class="nav-icon">📋</span> 訂單管理
+            </button>
+            <button class="nav-btn" onclick="window.location.href='statistics.html'">
+                <span class="nav-icon">📊</span> 統計
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='settings.html'">
+                <span class="nav-icon">⚙️</span> 設定
+            </button>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-detail">
+                <span class="user-icon">👤</span>
+                <span id="userDisplay">載入中...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span> 登出
+            </button>
+        </div>
+    </div>
+    
+    <!-- 設定內容 -->
+    <div class="settings-section">
+        <div class="settings-header">
+            <h2>⚙️ 商品優惠設定</h2>
+            <p>為每個商品設定優惠金額 - 優惠價格會在收銀頁面以紅色顯示</p>
+        </div>
+        
+        <div class="settings-grid" id="settingsGrid">
+            <!-- 商品設定卡片將由 JavaScript 動態產生 -->
+        </div>
+    </div>
+    
+    <script src="js/settings.js"></script>
+</body>
+</html>

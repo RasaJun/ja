@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>銷售統計 - 藍色收銀</title>
+    <link rel="stylesheet" href="css/pos.css">
+    <style>
+        /* 統計頁面專用樣式 */
+        .stats-container {
+            padding: 30px;
+            background: #f8fbff;
+            min-height: calc(100vh - 70px);
+        }
+        
+        .stats-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .stats-header h1 {
+            color: #0d47a1;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .date-filter {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .date-filter input {
+            padding: 8px 15px;
+            border: 2px solid #e3f2fd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .summary-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border-left: 5px solid #1976d2;
+            transition: all 0.3s;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(25,118,210,0.15);
+        }
+        
+        .summary-card .label {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .summary-card .value {
+            color: #0d47a1;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        .summary-card .sub-value {
+            color: #666;
+            font-size: 1rem;
+            margin-top: 5px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stats-card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+        
+        .stats-card h2 {
+            color: #0d47a1;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e3f2fd;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .product-stats-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .product-stats-table th {
+            text-align: left;
+            padding: 12px 8px;
+            color: #1976d2;
+            font-weight: 600;
+            font-size: 0.9rem;
+            border-bottom: 2px solid #e3f2fd;
+        }
+        
+        .product-stats-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #e3f2fd;
+        }
+        
+        .product-stats-table tr:hover {
+            background: #f5f9ff;
+        }
+        
+        .rank-1 { color: #ffd700; font-weight: bold; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e3f2fd;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #1976d2;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+            position: relative;
+        }
+        
+        .bar-chart {
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            height: 250px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+        }
+        
+        .bar-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bar {
+            width: 100%;
+            background: linear-gradient(to top, #1976d2, #64b5f6);
+            border-radius: 8px 8px 0 0;
+            transition: height 0.3s;
+            min-height: 5px;
+        }
+        
+        .bar-label {
+            font-size: 0.85rem;
+            color: #666;
+            text-align: center;
+            max-width: 100px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .bar-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #0d47a1;
+        }
+        
+        .export-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+        
+        .export-btn:hover {
+            background: #388e3c;
+            transform: translateY(-2px);
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .bar-chart {
+                overflow-x: auto;
+                padding-bottom: 10px;
+            }
+            
+            .bar-item {
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部工具列 -->
+    <div class="top-bar">
+        <div class="logo-area">
+            <img src="images/logo.png" alt="Logo" class="nav-logo" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%231976d2\'/%3E%3Ctext x=\'20\' y=\'25\' font-size=\'20\' text-anchor=\'middle\' fill=\'white\'%3E🧾%3C/text%3E%3C/svg%3E';">
+            <div class="logo-text">
+                <span class="brand">藍色收銀</span>
+                <span class="brand-sub">銷售統計</span>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <button class="nav-btn" onclick="window.location.href='pos.html'">
+                <span class="nav-icon">🧾</span> 收銀
+            </button>
+            <button class="nav-btn" onclick="window.location.href='orders.html'">
+                <span class="nav-icon">📋</span> 訂單管理
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='statistics.html'">
+                <span class="nav-icon">📊</span> 統計
+            </button>
+            <button class="nav-btn" onclick="window.location.href='settings.html'">
+                <span class="nav-icon">⚙️</span> 設定
+            </button>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-detail">
+                <span class="user-icon">👤</span>
+                <span id="userDisplay">載入中...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span> 登出
+            </button>
+        </div>
+    </div>
+    
+    <!-- 統計內容 -->
+    <div class="stats-container">
+        <div class="stats-header">
+            <h1>
+                <span>📊</span> 
+                銷售統計報表
+            </h1>
+            <div class="date-filter">
+                <input type="date" id="startDate" onchange="loadStatistics()">
+                <span>至</span>
+                <input type="date" id="endDate" onchange="loadStatistics()">
+                <button class="export-btn" onclick="exportStats()">
+                    <span>📥</span> 匯出報表
+                </button>
+            </div>
+        </div>
+        
+        <!-- 摘要卡片 -->
+        <div class="summary-cards" id="summaryCards">
+            <div class="summary-card">
+                <div class="label">
+                    <span>📦</span> 總銷售數量
+                </div>
+                <div class="value" id="totalQuantity">0</div>
+                <div class="sub-value" id="totalOrders">0 筆訂單</div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="label">
+                    <span>💰</span> 總營業額
+                </div>
+                <div class="value" id="totalRevenue">$0</div>
+            </div>
+            
+            <div class="summary-card">
+                <div class="label">
+                    <span>🏆</span> 熱銷商品
+                </div>
+                <div class="value" id="topProduct">-</div>
+                <div class="sub-value" id="topProductSales">0 件</div>
+            </div>
+            
+            <!-- 在 summary-cards 之後加入 -->
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <h2>
+                        <span>💳</span> 
+                        付款方式統計
+                    </h2>
+                    <div id="paymentStats" class="payment-stats">
+                        <!-- 由 JS 動態產生 -->
+                    </div>
+                </div>
+</div>
+        </div>
+        
+        <!-- 統計圖表區 -->
+        <div class="stats-grid">
+            <div class="stats-card">
+                <h2>
+                    <span>📈</span> 
+                    商品銷售排行榜
+                </h2>
+                <div class="bar-chart" id="salesChart">
+                    <!-- 圖表由 JS 動態產生 -->
+                </div>
+            </div>
+            
+            <div class="stats-card">
+                <h2>
+                    <span>🏅</span> 
+                    商品銷售明細
+                </h2>
+                <table class="product-stats-table" id="productStats">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>商品名稱</th>
+                            <th>銷售數量</th>
+                            <th>銷售總額</th>
+                            <th>佔比</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 由 JS 動態產生 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- 詳細統計 -->
+        <div class="stats-card">
+            <h2>
+                <span>📋</span> 
+                詳細銷售記錄
+            </h2>
+            <table class="product-stats-table" id="detailedStats">
+                <thead>
+                    <tr>
+                        <th>日期</th>
+                        <th>訂單編號</th>
+                        <th>商品名稱</th>
+                        <th>單價</th>
+                        <th>數量</th>
+                        <th>小計</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- 由 JS 動態產生 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="js/statistics.js"></script>
+</body>
+</html>

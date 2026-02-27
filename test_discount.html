@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>測試優惠設定</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f0f8ff; }
+        .product { 
+            background: white; 
+            padding: 20px; 
+            margin: 10px 0; 
+            border-radius: 10px; 
+            border-left: 5px solid #1976d2;
+        }
+        .discount { color: #ff5252; font-weight: bold; }
+        .normal { color: #1976d2; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; }
+        button { 
+            background: #1976d2; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 測試優惠設定</h1>
+    
+    <button onclick="checkProducts()">檢查商品資料</button>
+    <button onclick="checkDatabase()">檢查資料庫</button>
+    
+    <div id="result"></div>
+
+    <script>
+        async function checkProducts() {
+            const result = document.getElementById('result');
+            result.innerHTML = '載入中...';
+            
+            try {
+                const response = await fetch('php/get_products.php?t=' + Date.now());
+                const data = await response.json();
+                
+                let html = '<h2>商品資料：</h2>';
+                
+                if (data.success && data.data) {
+                    data.data.forEach(product => {
+                        const hasDiscount = product.discount_price && product.discount_price > 0;
+                        html += `
+                            <div class="product">
+                                <h3>${product.name}</h3>
+                                <p>原價: $${product.price}</p>
+                                <p class="${hasDiscount ? 'discount' : 'normal'}">
+                                    優惠價: ${hasDiscount ? '$' + product.discount_price : '無優惠'}
+                                </p>
+                                <p>最後更新: ${product.discount_updated_at || '從未'}</p>
+                                <p>更新者: ${product.discount_updated_by || '-'}</p>
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += '<p class="discount">無法載入商品資料</p>';
+                }
+                
+                html += '<h3>原始資料：</h3>';
+                html += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+                result.innerHTML = html;
+            } catch (error) {
+                result.innerHTML = `<p class="discount">錯誤: ${error.message}</p>`;
+            }
+        }
+        
+        async function checkDatabase() {
+            const result = document.getElementById('result');
+            result.innerHTML = '載入中...';
+            
+            try {
+                const response = await fetch('php/check_discounts.php');
+                const text = await response.text();
+                result.innerHTML = text;
+            } catch (error) {
+                result.innerHTML = `<p class="discount">錯誤: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

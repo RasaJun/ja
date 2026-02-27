@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>訂單管理 - 藍色收銀</title>
+    <link rel="stylesheet" href="css/pos.css">
+    <style>
+        /* 訂單管理專用樣式 */
+        .order-items-list {
+            max-width: 400px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .order-item-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin: 2px;
+        }
+        
+        .delete-btn {
+            background: #ff5252;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+        
+        .delete-btn:hover {
+            background: #d32f2f;
+            transform: scale(1.05);
+        }
+        
+        .confirm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .confirm-modal.show {
+            display: flex;
+        }
+        
+        .confirm-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+        
+        .confirm-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            justify-content: center;
+        }
+        
+        .confirm-btn {
+            padding: 10px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .confirm-yes {
+            background: #ff5252;
+            color: white;
+        }
+        
+        .confirm-yes:hover {
+            background: #d32f2f;
+        }
+        
+        .confirm-no {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .confirm-no:hover {
+            background: #bdbdbd;
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部工具列 -->
+    <div class="top-bar">
+        <div class="logo-area">
+            <img src="images/logo.png" alt="Logo" class="nav-logo" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'40\' height=\'40\' viewBox=\'0 0 40 40\'%3E%3Crect width=\'40\' height=\'40\' fill=\'%231976d2\'/%3E%3Ctext x=\'20\' y=\'25\' font-size=\'20\' text-anchor=\'middle\' fill=\'white\'%3E🧾%3C/text%3E%3C/svg%3E';">
+            <div class="logo-text">
+                <span class="brand">藍色收銀</span>
+                <span class="brand-sub">訂單管理</span>
+            </div>
+        </div>
+        
+        <div class="nav-links">
+            <button class="nav-btn" onclick="window.location.href='pos.html'">
+                <span class="nav-icon">🧾</span> 收銀
+            </button>
+            <button class="nav-btn active" onclick="window.location.href='orders.html'">
+                <span class="nav-icon">📋</span> 訂單管理
+            </button>
+            <button class="nav-btn" onclick="window.location.href='statistics.html'">
+                <span class="nav-icon">📊</span> 統計
+            </button>
+            <button class="nav-btn" onclick="window.location.href='settings.html'">
+                <span class="nav-icon">⚙️</span> 設定
+            </button>
+        </div>
+        
+        <div class="user-info">
+            <div class="user-detail">
+                <span class="user-icon">👤</span>
+                <span id="userDisplay">載入中...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span> 登出
+            </button>
+        </div>
+    </div>
+    
+    <!-- 訂單管理內容 -->
+    <div class="orders-container">
+        <div class="orders-header">
+            <h1>📋 訂單記錄</h1>
+            <div class="orders-filter">
+                <input type="text" id="searchOrder" placeholder="搜尋訂單編號...">
+                <input type="date" id="dateFilter">
+                <button class="filter-btn" onclick="loadOrders()">
+                    <span>🔍</span> 搜尋
+                </button>
+                <button class="filter-btn" onclick="refreshOrders()" style="background: #4caf50;">
+                    <span>🔄</span> 重新整理
+                </button>
+            </div>
+        </div>
+        
+        <div class="orders-table-container">
+            <table class="orders-table">
+                <thead>
+                    <tr>
+                        <th>訂單編號</th>
+                        <th>付款方式</th>
+                        <th>購買日期</th>
+                        <th>購買內容</th>
+                        <th>總金額</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersList">
+                    <!-- 訂單列表將由 JavaScript 動態產生 -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分頁 -->
+        <div class="pagination">
+            <button class="page-btn" onclick="changePage('prev')">« 上一頁</button>
+            <span id="pageInfo">第 1 頁 / 共 1 頁</span>
+            <button class="page-btn" onclick="changePage('next')">下一頁 »</button>
+        </div>
+    </div>
+    
+    <!-- 確認刪除彈窗 -->
+    <div id="confirmModal" class="confirm-modal">
+        <div class="confirm-content">
+            <h3 style="color: #d32f2f; margin-bottom: 15px;">⚠️ 確認刪除</h3>
+            <p id="deleteOrderInfo" style="margin-bottom: 20px;"></p>
+            <p style="color: #666; font-size: 0.9rem;">此操作無法復原！</p>
+            <div class="confirm-buttons">
+                <button class="confirm-btn confirm-no" onclick="closeConfirmModal()">取消</button>
+                <button class="confirm-btn confirm-yes" id="confirmDeleteBtn">確認刪除</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/orders.js"></script>
+</body>
+</html>

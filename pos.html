@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>收銀系統 - 藍色收銀</title>
+    <link rel="stylesheet" href="css/pos.css">
+    <!-- 加入 favicon -->
+    <link rel="icon" type="image/x-icon" href="images/favicon.ico">
+    <link rel="shortcut icon" href="images/favicon.ico">
+    <style>
+        /* 付款方式樣式 */
+        .payment-section {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8fbff;
+            border-radius: 10px;
+            border: 2px solid #e3f2fd;
+        }
+        
+        .payment-title {
+            color: #0d47a1;
+            font-size: 1rem;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .payment-option {
+            position: relative;
+        }
+        
+        .payment-option input[type="radio"] {
+            display: none;
+        }
+        
+        .payment-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 12px 8px;
+            background: white;
+            border: 2px solid #e3f2fd;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+        
+        .payment-option input[type="radio"]:checked + label {
+            border-color: #1976d2;
+            background: #e3f2fd;
+            box-shadow: 0 4px 12px rgba(25,118,210,0.2);
+        }
+        
+        .payment-option label:hover {
+            border-color: #1976d2;
+            transform: translateY(-2px);
+        }
+        
+        .payment-icon {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .payment-name {
+            font-weight: 600;
+            color: #0d47a1;
+            font-size: 0.9rem;
+        }
+        
+        .payment-note {
+            color: #666;
+            font-size: 0.75rem;
+            margin-top: 3px;
+        }
+        
+        .confirm-checkout-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #4caf50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            margin-top: 15px;
+        }
+        
+        .confirm-checkout-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .change-display {
+            margin-top: 15px;
+            padding: 15px;
+            background: #e8f5e9;
+            border-radius: 10px;
+            display: none;
+        }
+        
+        .change-display.show {
+            display: block;
+            animation: slideIn 0.3s;
+        }
+        
+        .change-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #a5d6a7;
+        }
+        
+        .change-amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4caf50;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 頂部工具列 -->
+    <div class="top-bar">
+        <!-- Logo 區域 -->
+        <div class="logo-area">
+            <img src="images/logo.png" alt="藍色收銀" class="nav-logo" 
+                 onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'45\' height=\'45\' viewBox=\'0 0 45 45\'%3E%3Crect width=\'45\' height=\'45\' fill=\'%231976d2\'/%3E%3Ctext x=\'22.5\' y=\'30\' font-size=\'24\' text-anchor=\'middle\' fill=\'white\' font-family=\'Arial\'%3E🧾%3C/text%3E%3C/svg%3E';">
+            <div class="logo-text">
+                <span class="brand">藍色收銀</span>
+                <span class="brand-sub">POS System</span>
+            </div>
+        </div>
+        
+        <!-- 導航連結 -->
+        <div class="nav-links">
+            <button class="nav-btn active" onclick="window.location.href='pos.html'">
+                <span class="nav-icon">🧾</span>
+                <span>收銀</span>
+            </button>
+            <button class="nav-btn" onclick="window.location.href='orders.html'">
+                <span class="nav-icon">📋</span>
+                <span>訂單管理</span>
+            </button>
+            <button class="nav-btn" onclick="window.location.href='statistics.html'">
+                <span class="nav-icon">📊</span>
+                <span>統計</span>
+            </button>
+            <button class="nav-btn" onclick="window.location.href='settings.html'">
+                <span class="nav-icon">⚙️</span>
+                <span>設定</span>
+            </button>
+        </div>
+        
+        <!-- 用戶資訊 -->
+        <div class="user-info">
+            <div class="user-detail">
+                <span class="user-icon">👤</span>
+                <span id="userDisplay">載入中...</span>
+            </div>
+            <button class="logout-btn" id="logoutBtn">
+                <span>🚪</span>
+                <span>登出</span>
+            </button>
+        </div>
+    </div>
+    
+    <!-- 主要內容區域 -->
+    <div class="main-content">
+        <!-- 左側商品區 -->
+        <div class="products-section">
+            <div class="section-header">
+                <h2>
+                    <span>📦</span> 
+                    商品列表
+                </h2>
+                <div class="search-box">
+                    <input type="text" id="searchProduct" placeholder="搜尋商品名稱...">
+                </div>
+            </div>
+            
+            <!-- 商品網格 -->
+            <div class="products-grid" id="productsGrid">
+                <!-- 商品將由 JavaScript 動態產生 -->
+                <div class="loading-spinner" id="loadingSpinner">
+                    <div class="spinner"></div>
+                    <p>載入商品中...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 右側購物車區 -->
+        <div class="cart-section">
+            <div class="cart-header">
+                <h2>
+                    <span class="cart-icon">🛒</span>
+                    訂單小計
+                    <span class="cart-count" id="cartCount">0</span>
+                </h2>
+            </div>
+            
+            <!-- 購物車項目 -->
+            <div class="cart-items" id="cartItems">
+                <div class="empty-cart">
+                    🛒 購物車是空的<br>
+                    <small>點擊商品加入訂單</small>
+                </div>
+            </div>
+            
+            <!-- 購物車底部 -->
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>總計：</span>
+                    <span class="total-amount" id="totalAmount">$0</span>
+                </div>
+                
+                <!-- 付款方式選擇 -->
+                <div class="payment-section">
+                    <div class="payment-title">
+                        <span>💳</span> 選擇付款方式
+                    </div>
+                    <div class="payment-options">
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="payment-cash" value="現金" checked>
+                            <label for="payment-cash">
+                                <span class="payment-icon">💵</span>
+                                <span class="payment-name">現金</span>
+                                <span class="payment-note">Cash</span>
+                            </label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="payment-alipay" value="AlipayHK">
+                            <label for="payment-alipay">
+                                <span class="payment-icon">📱</span>
+                                <span class="payment-name">AlipayHK</span>
+                                <span class="payment-note">支付寶</span>
+                            </label>
+                        </div>
+                        
+                        <div class="payment-option">
+                            <input type="radio" name="payment" id="payment-other" value="其他">
+                            <label for="payment-other">
+                                <span class="payment-icon">💳</span>
+                                <span class="payment-name">其他</span>
+                                <span class="payment-note">信用卡/八達通</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            
+                
+                <!-- 確認結帳按鈕 -->
+                <button class="confirm-checkout-btn" id="confirmCheckoutBtn">
+                    <span>✅</span>
+                    確認結帳
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 結帳成功提示 -->
+    <div id="checkoutSuccess" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: #4caf50;">
+                <h2>✅ 結帳成功</h2>
+                <button class="close-btn" onclick="closeCheckoutModal()">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center; padding: 30px;">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🎉</div>
+                <h3 id="successOrderNumber" style="color: #4caf50; margin-bottom: 15px;"></h3>
+                <p id="successPaymentMethod" style="color: #666; margin-bottom: 10px;"></p>
+                <p>訂單已建立成功</p>
+                <button class="checkout-btn" onclick="closeCheckoutModal()" style="margin-top: 20px;">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/pos.js"></script>
+</body>
+</html>

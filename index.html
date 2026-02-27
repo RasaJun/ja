@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS for JA</title>
+    <link rel="stylesheet" href="css/login.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box">
+            <div class="login-header">
+                <div class="logo-container">
+                    <img src="images/logo.png" alt="LOGO" class="login-logo">
+                </div>
+                <h1>Kongservation</h1>
+                <h3>POS System</h3>
+            </div>
+            <div class="login-body">
+                <!-- 提示訊息 -->
+                <div id="alertMessage" class="alert"></div>
+                
+                <!-- 登入表單 -->
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">使用者名稱</label>
+                        <input type="text" id="username" name="username" 
+                               placeholder="" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">密碼</label>
+                        <input type="password" id="password" name="password" 
+                               placeholder="" required>
+                    </div>
+                    
+                    <button type="submit" class="login-btn" id="loginBtn">登入</button>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+    
+    <script src="js/login.js"></script>
+</body>
+</html>
